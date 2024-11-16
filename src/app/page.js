@@ -1,4 +1,7 @@
 import Carousel from "@/components/Carousel";
+import Featured from "@/components/Featured";
+import OnSale from "@/components/OnSale";
+import TopSales from "@/components/TopSales";
 import Image from "next/image";
 
 export default function Home() {
@@ -15,6 +18,9 @@ export default function Home() {
   return (
     <div>
       <Carousel slides={slides} />
+      <Featured />
+      <TopSales />
+      <OnSale />
     </div>
   );
 }
