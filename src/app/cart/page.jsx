@@ -1,9 +1,10 @@
+import ViewCart from '@/components/ViewCart'
 import React from 'react'
 
 function Cart() {
   return (
     <div>
-      welcome
+      <ViewCart />
     </div>
   )
 }
