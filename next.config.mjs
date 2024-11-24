@@ -11,6 +11,10 @@ const nextConfig = {
             protocol: 'https',
             hostname: 'flowbite.com',
           },
+          {
+            protocol: 'http',
+            hostname: 'localhost',
+          },
         ],
       },
 };

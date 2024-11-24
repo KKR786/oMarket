@@ -3,36 +3,55 @@
 import { useState, useEffect } from "react";
 import React from 'react'
 import Image from "next/image";
+import { addToCart } from "@/helper";
 
 function Featured() {
-    const slides = [
-        "https://placehold.co/600x400",
-        "https://placehold.co/600x400/orange/white",
-        "https://placehold.co/600x400/blue/white",
-        "https://placehold.co/600x400/blue/yellow",
-        "https://placehold.co/600x400/blue/red",
-        "https://placehold.co/600x400/green/black"
-      ];
-    
       const [startIndex, setStartIndex] = useState(0);
+      const [products, setProducts] = useState([]);
     
       const slidesToShow = 4;
+
+      useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+              const res = await fetch("http://localhost:2006/api/products", {
+                method: "GET",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+              });
+              
+              const json = await res.json();
+              if (res.ok) {
+                setProducts(json);
+              } else {
+                console.log(json.error || 'Failed to fetch products');
+              }
+            } catch (error) {
+              console.log('Error fetching products:', error);
+            }
+          };
+      
+          fetchProducts();
+        }, []);
     
       const handleNext = () => {
-        setStartIndex((prevIndex) => (prevIndex + 1) % (slides.length - slidesToShow + 1));
+        setStartIndex((prevIndex) => (prevIndex + 1) % (products.length - slidesToShow + 1));
       };
     
 
       const handlePrev = () => {
         setStartIndex((prevIndex) => {
           return prevIndex === 0
-            ? slides.length - slidesToShow
+            ? products.length - slidesToShow
             : prevIndex - 1;
         });
       };
     
 
-      const visibleSlides = slides.slice(startIndex, startIndex + slidesToShow);
+      const visibleSlides = products.slice(startIndex, startIndex + slidesToShow);
+
+      console.log('f: ',visibleSlides, products)
 
       useEffect(() => {
         const intervalId = setInterval(() => {
@@ -41,6 +60,8 @@ function Featured() {
     
         return () => clearInterval(intervalId);
       }, []);
+
+      
   return (
     <div className="px-6 py-12 relative">
       <h2 className="relative uppercase border-b-2 border-solid border-[#eee] pb-2 mb-5 after:-bottom-[2px] after:bg-[#f02640] after:h-[3px] after:absolute after:left-0 after:w-[90px]">
@@ -74,25 +95,25 @@ function Featured() {
       </button>
 
       <div className="relative w-full">
-      <div className="relative flex overflow-hidden transition-transform duration-500 ease-in-out gap-x-2">
+      <div className="relative flex overflow-hidden transition-transform duration-500 ease-in-out gap-x-4">
         {visibleSlides.map((slide, index) => (
-          <div key={index} className="flex-shrink-0 w-full md:w-[calc(25%-8px)]">
+          <div key={index} className="flex-shrink-0 w-full md:w-[calc(25%-16px)]">
             <Image
-              src={slide}
+              src={`http://localhost:2006/${slide.images[0].replace(/\\/g, "/")}`}
               alt={`Slide ${startIndex + index + 1}`}
               className="block w-full h-auto rounded-lg"
               width={58}
               height={58}
             />
             <div className="px-4 py-2">
-            <p className="font-semibold">Name</p>
+            <p className="font-semibold">{slide.name}</p>
             <div className="flex justify-between items-center">
                 <div className="flex gap-x-4">
-                    <span>$300</span>
-                    <span className="line-through">$350</span>
+                    <span>{slide.price}</span>
+                    {/* <span className="line-through">$350</span> */}
                 </div>
                 <div className="flex text-gray-800 gap-x-4">
-                    <button title="Add to cart">
+                    <button title="Add to cart" onClick={() => addToCart(slide._id)}>
                         <svg xmlns="http://www.w3.org/2000/svg" id="Layer_1" data-name="Layer 1" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 hover:text-green-800"><path d="M9,22c0,1.1-.9,2-2,2s-2-.9-2-2,.9-2,2-2,2,.9,2,2Zm8-2c-1.1,0-2,.9-2,2s.9,2,2,2,2-.9,2-2-.9-2-2-2Zm6.32-15.9c-.57-.7-1.42-1.1-2.32-1.1h-7v6.5l1.32-1.23c.41-.38,1.04-.36,1.41,.05,.38,.4,.35,1.04-.05,1.41l-1.59,1.48c-.57,.57-1.33,.86-2.09,.86s-1.54-.29-2.13-.88l-1.56-1.46c-.4-.38-.42-1.01-.05-1.41,.38-.4,1.01-.43,1.41-.05l1.32,1.23V3H5.24l-.04-.35c-.18-1.51-1.46-2.65-2.98-2.65H1C.45,0,0,.45,0,1s.45,1,1,1h1.22c.51,0,.93,.38,.99,.88l1.38,11.7c.3,2.52,2.43,4.42,4.97,4.42h9.44c.55,0,1-.45,1-1s-.45-1-1-1H9.56c-1.29,0-2.4-.83-2.82-2h11.42c2.38,0,4.44-1.69,4.9-4.02l.88-4.39c.18-.88-.05-1.79-.62-2.49Z"/></svg>
                     </button>
 

@@ -43,11 +43,11 @@ function Carousel({ slides }) {
               data-carousel-item
             >
               <Image
-                src={slide}
-                className="absolute block w-full -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"
+                src={`http://localhost:2006/${slide.replace(/\\/g, "/")}`}
+                className="absolute block w-full "
                 alt={`Slide ${index + 1}`}
-                width={56}
-                height={56}
+                layout="fill"
+                objectFit="contain"
               />
             </div>
           ))}
