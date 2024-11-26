@@ -13,16 +13,20 @@ function ViewCart() {
 
   useEffect(() => {
     const fetchProducts = async () => {
-      const fetchedProducts = await getCartProducts(cart);
-      setProducts(fetchedProducts);
-    };
+        if (cart.length > 0) {
+          const fetchedProducts = await getCartProducts(cart);
+          setProducts(fetchedProducts);
+        } else {
+          setProducts([]);
+        }
+      };
 
     fetchProducts();
   }, [cart]);
 
   console.log('show: ',products)
 
-  const handleQty = (type, id) => {
+  const handleQty = (type, id, value) => {
     const updatedCart = [...cart];
 
     const productIndex = updatedCart.findIndex(item => item.id === id);
@@ -33,8 +37,11 @@ function ViewCart() {
         if (type === 'minus') {
             updatedCart[productIndex].quantity -= 1;
         } 
-        if ( type === 'plus') {
+        else if ( type === 'plus') {
             updatedCart[productIndex].quantity += 1;
+        }
+        else if ( type === 'custom' ) {
+            updatedCart[productIndex].quantity = value;
         }
 
         setCart(updatedCart);
@@ -43,8 +50,10 @@ function ViewCart() {
     }
   }
 
-  const qtyOnChange = (e, id) => {
-    
+  const removeOnClick = (id) => {
+    const updatedCart = cart.filter(item => item.id !== id);
+    setCart(updatedCart);
+    localStorage.setItem('cart', JSON.stringify(updatedCart));
   }
 
   if (cart.length === 0) {
@@ -93,10 +102,13 @@ function ViewCart() {
                     Product
                   </th>
                   <th scope="col" className="px-6 py-3">
+                    Price
+                  </th>
+                  <th scope="col" className="px-6 py-3">
                     Qty
                   </th>
                   <th scope="col" className="px-6 py-3">
-                    Price
+                    Total
                   </th>
                   <th scope="col" className="px-6 py-3">
                     Action
@@ -104,7 +116,9 @@ function ViewCart() {
                 </tr>
               </thead>
               <tbody>
-                {products.map ((p, i) =>
+                {products.map ((p, i) => {
+                    const cartItem = cart.find((item) => item.id === p._id);
+                    return (
                 <tr key={i} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                   <td className="p-4">
                     <Image
@@ -118,6 +132,11 @@ function ViewCart() {
                   <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">
                     {p.name}
                   </td>
+                  
+                  <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">
+                    ${p.price}
+                  </td>
+
                   <td className="px-6 py-4">
                     <div className="flex items-center">
                       <button
@@ -146,9 +165,9 @@ function ViewCart() {
                         <input
                           type="number"
                           id="quantity"
-                          className="bg-gray-50 w-14 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-2.5 py-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                          value={cart[i].quantity}
-                          onChange={() => qtyOnChange(i, e)}
+                          className="bg-gray-50 decoration- w-14 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-2.5 py-1"
+                          value={cartItem ? cartItem.quantity : 1}
+                          onChange={(e) => handleQty('custom', p._id, e.target.value)}
                           required
                         />
                       </div>
@@ -176,20 +195,40 @@ function ViewCart() {
                       </button>
                     </div>
                   </td>
+
                   <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">
-                    ${p.price}
+                    ${p.price * cartItem.quantity}
                   </td>
+
                   <td className="px-6 py-4">
-                    <a
-                      href="#"
+                    <button
+                      onClick={() => removeOnClick(p._id)}
                       className="font-medium text-red-600 dark:text-red-500 hover:underline"
                     >
                       Remove
-                    </a>
+                    </button>
                   </td>
-                </tr>)}
+                </tr>)})}
               </tbody>
             </table>
+            <div className="flex flex-col gap-y-4 justify-end float-right w-2/5 px-5 py-4">
+                <div className="flex justify-between items-center w-full">
+                    <span>Subtotal:</span>
+                    <span>$</span>
+                </div>
+                <div className="flex justify-between items-center w-full">
+                    <span>Coupon code:</span>
+                    <span className="underline">Add coupon</span>
+                </div>
+                <div className="flex justify-between items-center w-full">
+                    <input type="text" className="w-[78%]"/>
+                    <button className="ml-[2%] w-[20%] bg-[#f02640] border-[#f02640] px-[1.5rem] py-[.6rem] text-white rounded-lg text-[12px]">Apply</button>
+                </div>
+                <div className="flex justify-between items-center w-full">
+                    <span>Grand total:</span>
+                    <span className="font-semibold">$</span>
+                </div>
+            </div>
           </div>}
         </>
       )}
