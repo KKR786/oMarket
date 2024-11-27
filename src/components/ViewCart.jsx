@@ -10,6 +10,8 @@ function ViewCart() {
     JSON.parse(localStorage.getItem("cart")) || []
   );
   const [products, setProducts] = useState([])
+  const [showCoupon, setShowCoupon] = useState(false);
+  const [couponCode, setCouponCode] = useState(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -54,6 +56,12 @@ function ViewCart() {
     const updatedCart = cart.filter(item => item.id !== id);
     setCart(updatedCart);
     localStorage.setItem('cart', JSON.stringify(updatedCart));
+  }
+
+  const coupons = ['fifty', 'ten', 'five'];
+  const applyCoupon = (e) => {
+    const code = e.target.value;
+    coupons.includes(code) ? setCouponCode('5%') : setCouponCode(null);
   }
 
   if (cart.length === 0) {
@@ -214,20 +222,44 @@ function ViewCart() {
             <div className="flex flex-col gap-y-4 justify-end float-right w-2/5 px-5 py-4">
                 <div className="flex justify-between items-center w-full">
                     <span>Subtotal:</span>
-                    <span>$</span>
+                    <span>
+                    ${products.reduce((acc, p) => {
+                        const cartItem = cart.find((item) => item.id === p._id);
+                        return acc + (cartItem ? p.price * cartItem.quantity : 0);
+                    }, 0)}
+                    </span>
                 </div>
                 <div className="flex justify-between items-center w-full">
                     <span>Coupon code:</span>
-                    <span className="underline">Add coupon</span>
+                    <span className="underline cursor-pointer" onClick={() => setShowCoupon(!showCoupon)}>{!showCoupon ? 'Add coupon' : 'cancel'}</span>
                 </div>
-                <div className="flex justify-between items-center w-full">
-                    <input type="text" className="w-[78%]"/>
-                    <button className="ml-[2%] w-[20%] bg-[#f02640] border-[#f02640] px-[1.5rem] py-[.6rem] text-white rounded-lg text-[12px]">Apply</button>
-                </div>
+                {showCoupon && <>
+                    <div className="flex justify-between items-center w-full">
+                        <input type="text" className="w-[78%] bg-gray-50 border border-gray-900 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-2.5 py-[0.6rem] ps-5" onChange={applyCoupon}/>
+                        <button className="ml-[2%] w-[20%] bg-[#f02640] border-[#f02640] px-[1.5rem] py-[.6rem] text-white rounded-lg text-[12px]">Apply</button>
+                    </div>
+                    {couponCode && 
+                        <span className="text-green-900">Coupon applied</span>
+                    }</>
+                }
                 <div className="flex justify-between items-center w-full">
                     <span>Grand total:</span>
-                    <span className="font-semibold">$</span>
+                    <span className="font-semibold">
+                    ${(() => {
+                        const subtotal = products.reduce((acc, p) => {
+                        const cartItem = cart.find((item) => item.id === p._id);
+                        return acc + (cartItem ? p.price * cartItem.quantity : 0);
+                        }, 0);
+                        
+                        const discount = couponCode ? parseFloat(couponCode) : 0;
+
+                        const totalAfterDiscount = subtotal * (1 - discount / 100);
+
+                        return totalAfterDiscount.toFixed(2);
+                    })()}
+                    </span>
                 </div>
+                <button className="bg-[#f02640] border-[#f02640] px-[1.5rem] py-[.6rem] text-white rounded-lg">Checkout</button>
             </div>
           </div>}
         </>
