@@ -124,6 +124,7 @@ function Featured() {
                     </button>
                 </div>
             </div>
+            
             </div>
           </div>
         ))}

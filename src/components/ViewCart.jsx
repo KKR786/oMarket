@@ -11,7 +11,8 @@ function ViewCart() {
   );
   const [products, setProducts] = useState([])
   const [showCoupon, setShowCoupon] = useState(false);
-  const [couponCode, setCouponCode] = useState(null);
+  const [couponCode, setCouponCode] = useState('');
+  const [couponDiscount, setCouponDiscount] = useState(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -61,7 +62,8 @@ function ViewCart() {
   const coupons = ['fifty', 'ten', 'five'];
   const applyCoupon = (e) => {
     const code = e.target.value;
-    coupons.includes(code) ? setCouponCode('5%') : setCouponCode(null);
+    coupons.includes(code) ? setCouponDiscount('5%') : setCouponDiscount(null);
+    setCouponCode(code);
   }
 
   if (cart.length === 0) {
@@ -148,8 +150,9 @@ function ViewCart() {
                   <td className="px-6 py-4">
                     <div className="flex items-center">
                       <button
-                        className="inline-flex items-center justify-center p-1 me-3 text-sm font-medium h-6 w-6 text-gray-500 bg-white border border-gray-300 rounded-full focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700"
+                        className="inline-flex items-center justify-center p-1 me-3 text-sm font-medium h-6 w-6 text-gray-900 disabled:text-gray-500 bg-white border border-gray-300 rounded-full focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 disabled:cursor-not-allowed"
                         type="button"
+                        disabled={cartItem && cartItem.quantity <= 1 ? true : false}
                         onClick={() => handleQty('minus', p._id)}
                       >
                         <span className="sr-only">Quantity button</span>
@@ -175,7 +178,8 @@ function ViewCart() {
                           id="quantity"
                           className="bg-gray-50 decoration- w-14 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-2.5 py-1"
                           value={cartItem ? cartItem.quantity : 1}
-                          onChange={(e) => handleQty('custom', p._id, e.target.value)}
+                          onChange={(e) => handleQty('custom', p._id, Math.max(1, e.target.value))}
+                          min={1}
                           required
                         />
                       </div>
@@ -205,7 +209,7 @@ function ViewCart() {
                   </td>
 
                   <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">
-                    ${p.price * cartItem.quantity}
+                    ${p.price * cartItem?.quantity}
                   </td>
 
                   <td className="px-6 py-4">
@@ -231,14 +235,14 @@ function ViewCart() {
                 </div>
                 <div className="flex justify-between items-center w-full">
                     <span>Coupon code:</span>
-                    <span className="underline cursor-pointer" onClick={() => setShowCoupon(!showCoupon)}>{!showCoupon ? 'Add coupon' : 'cancel'}</span>
+                    <span className="underline cursor-pointer after:absolute after:w-full after:" onClick={() => setShowCoupon(!showCoupon)}>{!showCoupon ? (couponDiscount ? 'Coupon applied' : 'Add coupon') : 'cancel'}</span>
                 </div>
                 {showCoupon && <>
                     <div className="flex justify-between items-center w-full">
-                        <input type="text" className="w-[78%] bg-gray-50 border border-gray-900 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-2.5 py-[0.6rem] ps-5" onChange={applyCoupon}/>
+                        <input type="text" className="w-[78%] bg-gray-50 border border-gray-900 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-2.5 py-[0.6rem] ps-5" value={couponCode} onChange={applyCoupon}/>
                         <button className="ml-[2%] w-[20%] bg-[#f02640] border-[#f02640] px-[1.5rem] py-[.6rem] text-white rounded-lg text-[12px]">Apply</button>
                     </div>
-                    {couponCode && 
+                    {couponDiscount && 
                         <span className="text-green-900">Coupon applied</span>
                     }</>
                 }
@@ -251,7 +255,7 @@ function ViewCart() {
                         return acc + (cartItem ? p.price * cartItem.quantity : 0);
                         }, 0);
                         
-                        const discount = couponCode ? parseFloat(couponCode) : 0;
+                        const discount = couponDiscount ? parseFloat(couponDiscount) : 0;
 
                         const totalAfterDiscount = subtotal * (1 - discount / 100);
 
